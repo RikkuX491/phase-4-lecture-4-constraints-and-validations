@@ -69,6 +69,48 @@ class HotelById(Resource):
             status = 200
 
         return make_response(jsonify(response_body), status)
+    
+    def patch(self, id):
+        hotel = Hotel.query.filter(Hotel.id == id).first()
+
+        if not hotel:
+            response_body = {
+                "error": "Hotel not found"
+            }
+            status = 404
+
+        else:
+            json_data = request.get_json()
+            for key in json_data:
+                setattr(hotel, key, json_data.get(key))
+            db.session.commit()
+
+            response_body = {
+                "id": hotel.id,
+                "name": hotel.name
+            }
+            status = 200
+
+        return make_response(jsonify(response_body), status)
+    
+    def delete(self, id):
+        hotel = Hotel.query.filter(Hotel.id == id).first()
+
+        if not hotel:
+            response_body = {
+                "error": "Hotel not found"
+            }
+            status = 404
+
+        else:
+            db.session.delete(hotel)
+            db.session.commit()
+
+            response_body = {}
+            status = 204
+
+        return make_response(jsonify(response_body), status)
+
 
 api.add_resource(HotelById, '/hotels/<int:id>')
 
