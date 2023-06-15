@@ -23,6 +23,7 @@ api = Api(app)
 class Hotels(Resource):
 
     def get(self):
+        ipdb.set_trace()
         hotels = Hotel.query.all()
 
         response_body = []
