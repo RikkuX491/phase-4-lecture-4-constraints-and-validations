@@ -37,16 +37,23 @@ class Hotels(Resource):
         return make_response(jsonify(response_body), 200)
 
     def post(self):
-        new_hotel = Hotel(name=request.get_json().get('name'))
-        db.session.add(new_hotel)
-        db.session.commit()
+        try:
+            new_hotel = Hotel(name=request.get_json().get('name'))
+            db.session.add(new_hotel)
+            db.session.commit()
 
-        response_body = {
-            "id": new_hotel.id,
-            "name": new_hotel.name
-        }
-        
-        return make_response(jsonify(response_body), 201)
+            response_body = {
+                "id": new_hotel.id,
+                "name": new_hotel.name
+            }
+            
+            return make_response(jsonify(response_body), 201)
+        except ValueError as error:
+            response_body = {
+                "error": error.args
+            }
+            return make_response(jsonify(response_body), 422)
+
 
 api.add_resource(Hotels, '/hotels')
 
@@ -77,21 +84,28 @@ class HotelById(Resource):
             response_body = {
                 "error": "Hotel not found"
             }
-            status = 404
+            return make_response(jsonify(response_body), 404)
 
         else:
-            json_data = request.get_json()
-            for key in json_data:
-                setattr(hotel, key, json_data.get(key))
-            db.session.commit()
+            try:
+                json_data = request.get_json()
+                for key in json_data:
+                    setattr(hotel, key, json_data.get(key))
+                db.session.commit()
 
-            response_body = {
-                "id": hotel.id,
-                "name": hotel.name
-            }
-            status = 200
-
-        return make_response(jsonify(response_body), status)
+                response_body = {
+                    "id": hotel.id,
+                    "name": hotel.name
+                }
+                return make_response(jsonify(response_body), 200)
+            
+            except ValueError as error:
+                
+                response_body = {
+                    "error": error.args
+                }
+                
+                return make_response(jsonify(response_body), 422)
     
     def delete(self, id):
         hotel = Hotel.query.filter(Hotel.id == id).first()
@@ -126,12 +140,18 @@ class Customers(Resource):
         return make_response(jsonify(response_body), 200)
     
     def post(self):
-        new_customer = Customer(first_name=request.get_json().get('first_name'), last_name=request.get_json().get('last_name'))
+        try:
+            new_customer = Customer(first_name=request.get_json().get('first_name'), last_name=request.get_json().get('last_name'))
 
-        db.session.add(new_customer)
-        db.session.commit()
-        
-        return make_response(jsonify(new_customer.to_dict()), 201)
+            db.session.add(new_customer)
+            db.session.commit()
+            
+            return make_response(jsonify(new_customer.to_dict()), 201)
+        except ValueError as error:
+            response_body = {
+                "error": error.args
+            }
+            return make_response(jsonify(response_body), 422)
 
 api.add_resource(Customers, '/customers')
 
@@ -158,19 +178,24 @@ class CustomerById(Resource):
             response_body = {
                 "error": "Customer not found"
             }
-            status = 404
+            return make_response(jsonify(response_body), 404)
         else:
-            json_data = request.get_json()
-            
-            for key in json_data:
-                setattr(customer, key, json_data.get(key))
+            try:
+                json_data = request.get_json()
+                
+                for key in json_data:
+                    setattr(customer, key, json_data.get(key))
 
-            db.session.commit()
+                db.session.commit()
 
-            response_body = customer.to_dict()
-            status = 200
+                response_body = customer.to_dict()
 
-        return make_response(jsonify(response_body), status)
+                return make_response(jsonify(response_body), 200)
+            except ValueError as error:
+                response_body = {
+                    "error": error.args
+                }
+                return make_response(jsonify(response_body), 422)
     
     def delete(self, id):
         customer = Customer.query.filter(Customer.id == id).first()
